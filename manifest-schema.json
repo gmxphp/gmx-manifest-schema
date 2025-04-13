@@ -1,0 +1,516 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "GMX Framework Manifest Schema",
+    "description": "Schema for GMX Framework manifest.yml configuration file",
+    "type": "object",
+    "required": [
+        "name",
+        "version"
+    ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Unique name of the module (camelCase, lowercase start)",
+            "pattern": "^[a-z][a-zA-Z0-9]*$"
+        },
+        "version": {
+            "type": "string",
+            "description": "Module version in SemVer format",
+            "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z-.]*)*$"
+        },
+        "description": {
+            "type": "string",
+            "description": "Brief description of the module"
+        },
+        "class": {
+            "type": "string",
+            "description": "Fully qualified name of the main module class",
+            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+        },
+        "preload": {
+            "type": "boolean",
+            "description": "Whether to preload the module on framework startup",
+            "default": false
+        },
+        "requires": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "description": "Dependencies on other modules",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "name",
+                            "version"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "Name of the required module"
+                            },
+                            "version": {
+                                "type": "string",
+                                "description": "Required version (SemVer range)"
+                            },
+                            "optional": {
+                                "type": "boolean",
+                                "description": "Is the dependency optional",
+                                "default": false
+                            }
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "description": "Dependencies on other modules",
+                    "additionalProperties": {
+                        "type": "string",
+                        "description": "Required version (SemVer range)"
+                    }
+                }
+            ]
+        },
+        "middleware": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Global middleware configuration 'app@component.method'",
+                    "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                },
+                {
+                    "type": "array",
+                    "description": "Global middleware configuration",
+                    "items": {
+                        "type": "string",
+                        "description": "Middleware in format 'module@component.method'",
+                        "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                    }
+                },
+                {
+                    "type": "object",
+                    "description": "Middleware configuration for before/after chain",
+                    "properties": {
+                        "before": {
+                            "type": "array",
+                            "description": "Middleware before main chain",
+                            "items": {
+                                "type": "string",
+                                "description": "Middleware in format 'module@component.method'",
+                                "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                            }
+                        },
+                        "after": {
+                            "type": "array",
+                            "description": "Middleware after main chain",
+                            "items": {
+                                "type": "string",
+                                "description": "Middleware in format 'module@component.method'",
+                                "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "bootstrap": {
+            "type": "object",
+            "description": "Components to initialize on startup",
+            "propertyNames": {
+                "pattern": "^[a-z][a-zA-Z0-9]*$"
+            },
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "class"
+                ],
+                "properties": {
+                    "class": {
+                        "type": "string",
+                        "description": "Fully qualified class name",
+                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                    },
+                    "params": {
+                        "type": "array",
+                        "description": "Constructor parameters"
+                    },
+                    "port": {
+                        "type": "boolean",
+                        "description": "Expose component via port system",
+                        "default": false
+                    },
+                    "use_di": {
+                        "type": "boolean",
+                        "description": "Use Dependency Injection",
+                        "default": true
+                    },
+                    "shared": {
+                        "type": "boolean",
+                        "description": "Singleton instance",
+                        "default": true
+                    },
+                    "inherit": {
+                        "type": "boolean",
+                        "description": "Apply DI to subclasses",
+                        "default": true
+                    },
+                    "bindings": {
+                        "type": "object",
+                        "description": "Dependency bindings",
+                        "propertyNames": {
+                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        },
+                        "additionalProperties": {
+                            "type": "string",
+                            "description": "Class that will be used instead of the specified interface/class",
+                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        }
+                    },
+                    "map": {
+                        "type": "string",
+                        "description": "Global rule for instance creation",
+                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                    },
+                    "call": {
+                        "type": "array",
+                        "description": "Methods to call after creation",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "description": "Method without additional params"
+                                },
+                                {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "description": "Additional params for method"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "di": {
+            "type": "array",
+            "description": "Global Dependency Injection rules",
+            "items": {
+                "type": "object",
+                "required": [
+                    "class"
+                ],
+                "properties": {
+                    "class": {
+                        "type": "string",
+                        "description": "Fully qualified class or interface name"
+                    },
+                    "params": {
+                        "type": "array",
+                        "description": "Constructor parameters"
+                    },
+                    "shared": {
+                        "type": "boolean",
+                        "description": "Singleton instance",
+                        "default": true
+                    },
+                    "inherit": {
+                        "type": "boolean",
+                        "description": "Apply DI to subclasses",
+                        "default": true
+                    },
+                    "bindings": {
+                        "type": "object",
+                        "description": "Dependency bindings",
+                        "propertyNames": {
+                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        },
+                        "additionalProperties": {
+                            "type": "string",
+                            "description": "Class that will be used instead of the specified interface/class",
+                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        }
+                    },
+                    "map": {
+                        "type": "string",
+                        "description": "Map interface to implementation",
+                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                    },
+                    "call": {
+                        "type": "array",
+                        "description": "Methods to call after creation",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "description": "Method without additional params"
+                                },
+                                {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "description": "Additional params for method"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "tasks": {
+            "type": "object",
+            "description": "Background tasks and queues",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "handler"
+                ],
+                "properties": {
+                    "handler": {
+                        "type": "string",
+                        "description": "Task handler in format 'component.method'",
+                        "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                    },
+                    "params": {
+                        "type": "array",
+                        "description": "Parameters for handlerу"
+                    },
+                    "schedule": {
+                        "type": "object",
+                        "description": "Scheduling for periodic tasks",
+                        "properties": {
+                            "cron": {
+                                "type": "string",
+                                "description": "Cron schedule expression"
+                            },
+                            "async": {
+                                "type": "boolean",
+                                "description": "Asynchronous execution",
+                                "default": false
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "description": "Priority (1 highest)",
+                                "default": 1000
+                            },
+                            "solo": {
+                                "type": "boolean",
+                                "description": "Single instance in cluster",
+                                "default": false
+                            },
+                            "overlap": {
+                                "type": "integer",
+                                "description": "Overlap protection in seconds",
+                                "default": 3600
+                            },
+                            "cluster": {
+                                "type": "boolean",
+                                "description": "Cluster mode with Redis",
+                                "default": true
+                            }
+                        }
+                    },
+                    "worker": {
+                        "type": "object",
+                        "description": "Queue worker configuration",
+                        "properties": {
+                            "batch_size": {
+                                "type": "integer",
+                                "description": "Tasks per cycle",
+                                "default": 10
+                            },
+                            "default_start_id": {
+                                "type": "string",
+                                "description": "Starting ID for group reading",
+                                "default": "0"
+                            },
+                            "expected_duration": {
+                                "type": "integer",
+                                "description": "Task processing time limit (seconds)",
+                                "default": 3600
+                            },
+                            "max_message_age": {
+                                "type": "integer",
+                                "description": "Max message age (seconds)",
+                                "default": 86400
+                            },
+                            "max_retries": {
+                                "type": "integer",
+                                "description": "Max retries on failure",
+                                "default": 3
+                            },
+                            "max_runtime": {
+                                "type": "integer",
+                                "description": "Max worker runtime (seconds)",
+                                "default": 3600
+                            },
+                            "max_stream_size": {
+                                "type": "integer",
+                                "description": "Max stream size",
+                                "default": 100000
+                            },
+                            "use_claim_pending": {
+                                "type": "boolean",
+                                "description": "Claim pending messages",
+                                "default": true
+                            }
+                        }
+                    },
+                    "log": {
+                        "type": "object",
+                        "description": "Logging configuration for tasks",
+                        "properties": {
+                            "output": {
+                                "type": "string",
+                                "description": "Path to log file"
+                            },
+                            "append": {
+                                "type": "boolean",
+                                "description": "Append to existing log",
+                                "default": false
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "events": {
+            "type": "object",
+            "description": "Event listeners configuration",
+            "additionalProperties": {
+                "type": "array",
+                "description": "List of event listeners",
+                "items": {
+                    "type": "object",
+                    "anyOf": [
+                        {
+                            "required": [
+                                "handler"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "queue"
+                            ]
+                        }
+                    ],
+                    "properties": {
+                        "handler": {
+                            "type": "string",
+                            "description": "Event handler in format 'component.method'",
+                            "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                        },
+                        "priority": {
+                            "type": "integer",
+                            "description": "Priority (1 highest)",
+                            "default": 1000
+                        },
+                        "queue": {
+                            "type": "string",
+                            "description": "Queue name for async processing"
+                        }
+                    }
+                }
+            }
+        },
+        "routes": {
+            "type": "array",
+            "description": "HTTP route definitions",
+            "items": {
+                "type": "object",
+                "required": [
+                    "path",
+                    "method",
+                    "handler"
+                ],
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "URL path with optional dynamic segments"
+                    },
+                    "method": {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "oneOf": [
+                            {
+                                "enum": [
+                                    "GET",
+                                    "POST",
+                                    "PUT",
+                                    "DELETE",
+                                    "PATCH",
+                                    "OPTIONS",
+                                    "HEAD"
+                                ]
+                            },
+                            {
+                                "pattern": "^(GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD)(\\|(GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD))+$"
+                            }
+                        ]
+                    },
+                    "handler": {
+                        "type": "string",
+                        "description": "Route handler in format 'component.method'",
+                        "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                    },
+                    "params": {
+                        "type": "array",
+                        "description": "Parameters for handler"
+                    },
+                    "middleware": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "description": "Middleware configuration 'app@component.method'",
+                                "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                            },
+                            {
+                                "type": "array",
+                                "description": "Middleware configuration",
+                                "items": {
+                                    "type": "string",
+                                    "description": "Middleware in format 'module@component.method'",
+                                    "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "description": "Middleware configuration for before/after chain",
+                                "properties": {
+                                    "before": {
+                                        "type": "array",
+                                        "description": "Middleware before main chain",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Middleware in format 'module@component.method'",
+                                            "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                                        }
+                                    },
+                                    "after": {
+                                        "type": "array",
+                                        "description": "Middleware after main chain",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Middleware in format 'module@component.method'",
+                                            "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Unique route identifier"
+                    }
+                }
+            }
+        },
+        "config": {
+            "type": "object",
+            "description": "Environment configuration for the module",
+            "additionalProperties": true
+        }
+    }
+}
