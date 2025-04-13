@@ -20,12 +20,11 @@
         },
         "description": {
             "type": "string",
-            "description": "Brief description of the module"
+            "description": "Brief description of the module's purpose"
         },
         "class": {
             "type": "string",
-            "description": "Fully qualified name of the main module class",
-            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+            "description": "Relative path to main class from module root (e.g., 'App')"
         },
         "preload": {
             "type": "boolean",
@@ -50,7 +49,7 @@
                             },
                             "version": {
                                 "type": "string",
-                                "description": "Required version (SemVer range)"
+                                "description": "Required version or range"
                             },
                             "optional": {
                                 "type": "boolean",
@@ -62,10 +61,10 @@
                 },
                 {
                     "type": "object",
-                    "description": "Dependencies on other modules",
+                    "description": "Dependencies on other modules as key-value pairs",
                     "additionalProperties": {
                         "type": "string",
-                        "description": "Required version (SemVer range)"
+                        "description": "Required version or range"
                     }
                 }
             ]
@@ -74,37 +73,37 @@
             "oneOf": [
                 {
                     "type": "string",
-                    "description": "Global middleware configuration 'app@component.method'",
+                    "description": "Single global middleware in format 'module@component.method' or 'component.method'",
                     "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                 },
                 {
                     "type": "array",
-                    "description": "Global middleware configuration",
+                    "description": "List of global middleware configurations",
                     "items": {
                         "type": "string",
-                        "description": "Middleware in format 'module@component.method'",
+                        "description": "Middleware in format 'module@component.method' or 'component.method'",
                         "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                     }
                 },
                 {
                     "type": "object",
-                    "description": "Middleware configuration for before/after chain",
+                    "description": "Middleware configuration with before/after separation",
                     "properties": {
                         "before": {
                             "type": "array",
-                            "description": "Middleware before main chain",
+                            "description": "Middleware executed before the main chain",
                             "items": {
                                 "type": "string",
-                                "description": "Middleware in format 'module@component.method'",
+                                "description": "Middleware in format 'module@component.method' or 'component.method'",
                                 "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                             }
                         },
                         "after": {
                             "type": "array",
-                            "description": "Middleware after main chain",
+                            "description": "Middleware executed after the main chain",
                             "items": {
                                 "type": "string",
-                                "description": "Middleware in format 'module@component.method'",
+                                "description": "Middleware in format 'module@component.method' or 'component.method'",
                                 "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                             }
                         }
@@ -114,7 +113,7 @@
         },
         "bootstrap": {
             "type": "object",
-            "description": "Components to initialize on startup",
+            "description": "Components to initialize on framework startup",
             "propertyNames": {
                 "pattern": "^[a-z][a-zA-Z0-9]*$"
             },
@@ -126,64 +125,58 @@
                 "properties": {
                     "class": {
                         "type": "string",
-                        "description": "Fully qualified class name",
-                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        "description": "Relative path to class from module root (e.g., 'lib\\service\\UserService')"
                     },
                     "params": {
                         "type": "array",
-                        "description": "Constructor parameters"
+                        "description": "Parameters for the class constructor"
                     },
                     "port": {
                         "type": "boolean",
-                        "description": "Expose component via port system",
+                        "description": "Expose component via the port system for inter-module access",
                         "default": false
                     },
                     "use_di": {
                         "type": "boolean",
-                        "description": "Use Dependency Injection",
+                        "description": "Use Dependency Injection for this component",
                         "default": true
                     },
                     "shared": {
                         "type": "boolean",
-                        "description": "Singleton instance",
+                        "description": "Use singleton pattern (single instance)",
                         "default": true
                     },
                     "inherit": {
                         "type": "boolean",
-                        "description": "Apply DI to subclasses",
+                        "description": "Apply DI rules to subclasses",
                         "default": true
                     },
                     "bindings": {
                         "type": "object",
-                        "description": "Dependency bindings",
-                        "propertyNames": {
-                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
-                        },
+                        "description": "Custom dependency bindings for DI",
                         "additionalProperties": {
                             "type": "string",
-                            "description": "Class that will be used instead of the specified interface/class",
-                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                            "description": "Class path to use instead of the specified interface/class"
                         }
                     },
                     "map": {
                         "type": "string",
-                        "description": "Global rule for instance creation",
-                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        "description": "Rule for mapping interface to implementation"
                     },
                     "call": {
                         "type": "array",
-                        "description": "Methods to call after creation",
+                        "description": "Methods to call after instance creation",
                         "items": {
                             "oneOf": [
                                 {
                                     "type": "string",
-                                    "description": "Method without additional params"
+                                    "description": "Method name without parameters"
                                 },
                                 {
                                     "type": "object",
                                     "additionalProperties": {
                                         "type": "array",
-                                        "description": "Additional params for method"
+                                        "description": "Parameters for the method call"
                                     }
                                 }
                             ]
@@ -194,7 +187,7 @@
         },
         "di": {
             "type": "array",
-            "description": "Global Dependency Injection rules",
+            "description": "Global Dependency Injection configuration rules",
             "items": {
                 "type": "object",
                 "required": [
@@ -203,53 +196,48 @@
                 "properties": {
                     "class": {
                         "type": "string",
-                        "description": "Fully qualified class or interface name"
+                        "description": "Relative path to class or interface from module root"
                     },
                     "params": {
                         "type": "array",
-                        "description": "Constructor parameters"
+                        "description": "Parameters for the class constructor"
                     },
                     "shared": {
                         "type": "boolean",
-                        "description": "Singleton instance",
+                        "description": "Use singleton pattern (single instance)",
                         "default": true
                     },
                     "inherit": {
                         "type": "boolean",
-                        "description": "Apply DI to subclasses",
+                        "description": "Apply DI rules to subclasses",
                         "default": true
                     },
                     "bindings": {
                         "type": "object",
-                        "description": "Dependency bindings",
-                        "propertyNames": {
-                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
-                        },
+                        "description": "Custom dependency bindings for DI",
                         "additionalProperties": {
                             "type": "string",
-                            "description": "Class that will be used instead of the specified interface/class",
-                            "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                            "description": "Relative path to class that will replace the specified interface/class"
                         }
                     },
                     "map": {
                         "type": "string",
-                        "description": "Map interface to implementation",
-                        "pattern": "^(\\\\\\\\)[a-zA-Z_][a-zA-Z0-9_]*(\\\\\\\\[a-zA-Z_][a-zA-Z0-9_]*)*$"
+                        "description": "Map an interface to a specific implementation"
                     },
                     "call": {
                         "type": "array",
-                        "description": "Methods to call after creation",
+                        "description": "Methods to call after instance creation",
                         "items": {
                             "oneOf": [
                                 {
                                     "type": "string",
-                                    "description": "Method without additional params"
+                                    "description": "Method name without parameters"
                                 },
                                 {
                                     "type": "object",
                                     "additionalProperties": {
                                         "type": "array",
-                                        "description": "Additional params for method"
+                                        "description": "Parameters for the method call"
                                     }
                                 }
                             ]
@@ -260,7 +248,7 @@
         },
         "tasks": {
             "type": "object",
-            "description": "Background tasks and queues",
+            "description": "Background tasks and queue configurations",
             "additionalProperties": {
                 "type": "object",
                 "required": [
@@ -269,90 +257,89 @@
                 "properties": {
                     "handler": {
                         "type": "string",
-                        "description": "Task handler in format 'component.method'",
-                        "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                        "description": "Task handler in format 'component.method' or relative path 'lib\\task\\TaskClass.method'"
                     },
                     "params": {
                         "type": "array",
-                        "description": "Parameters for handlerу"
+                        "description": "Parameters passed to the handler"
                     },
                     "schedule": {
                         "type": "object",
-                        "description": "Scheduling for periodic tasks",
+                        "description": "Scheduling configuration for periodic tasks",
                         "properties": {
                             "cron": {
                                 "type": "string",
-                                "description": "Cron schedule expression"
+                                "description": "Cron expression for task scheduling"
                             },
                             "async": {
                                 "type": "boolean",
-                                "description": "Asynchronous execution",
+                                "description": "Execute task asynchronously",
                                 "default": false
                             },
                             "priority": {
                                 "type": "integer",
-                                "description": "Priority (1 highest)",
+                                "description": "Execution priority (1 is highest)",
                                 "default": 1000
                             },
                             "solo": {
                                 "type": "boolean",
-                                "description": "Single instance in cluster",
+                                "description": "Allow only one instance in cluster",
                                 "default": false
                             },
                             "overlap": {
                                 "type": "integer",
-                                "description": "Overlap protection in seconds",
+                                "description": "Overlap protection time in seconds",
                                 "default": 3600
                             },
                             "cluster": {
                                 "type": "boolean",
-                                "description": "Cluster mode with Redis",
+                                "description": "Enable cluster mode with Redis",
                                 "default": true
                             }
                         }
                     },
                     "worker": {
                         "type": "object",
-                        "description": "Queue worker configuration",
+                        "description": "Configuration for queue workers",
                         "properties": {
                             "batch_size": {
                                 "type": "integer",
-                                "description": "Tasks per cycle",
+                                "description": "Number of tasks processed per cycle",
                                 "default": 10
                             },
                             "default_start_id": {
                                 "type": "string",
-                                "description": "Starting ID for group reading",
+                                "description": "Starting ID for reading group ('0' for start, '$' for new only)",
                                 "default": "0"
                             },
                             "expected_duration": {
                                 "type": "integer",
-                                "description": "Task processing time limit (seconds)",
+                                "description": "Expected task processing duration limit in seconds",
                                 "default": 3600
                             },
                             "max_message_age": {
                                 "type": "integer",
-                                "description": "Max message age (seconds)",
+                                "description": "Maximum age of messages in seconds",
                                 "default": 86400
                             },
                             "max_retries": {
                                 "type": "integer",
-                                "description": "Max retries on failure",
+                                "description": "Maximum retries on task failure",
                                 "default": 3
                             },
                             "max_runtime": {
                                 "type": "integer",
-                                "description": "Max worker runtime (seconds)",
+                                "description": "Maximum runtime for worker in seconds",
                                 "default": 3600
                             },
                             "max_stream_size": {
                                 "type": "integer",
-                                "description": "Max stream size",
+                                "description": "Maximum size of the stream",
                                 "default": 100000
                             },
                             "use_claim_pending": {
                                 "type": "boolean",
-                                "description": "Claim pending messages",
+                                "description": "Claim pending messages from PEL queue",
                                 "default": true
                             }
                         }
@@ -363,11 +350,11 @@
                         "properties": {
                             "output": {
                                 "type": "string",
-                                "description": "Path to log file"
+                                "description": "Full path to the log file"
                             },
                             "append": {
                                 "type": "boolean",
-                                "description": "Append to existing log",
+                                "description": "Append data to existing log file",
                                 "default": false
                             }
                         }
@@ -377,10 +364,10 @@
         },
         "events": {
             "type": "object",
-            "description": "Event listeners configuration",
+            "description": "Event listeners and handlers configuration",
             "additionalProperties": {
                 "type": "array",
-                "description": "List of event listeners",
+                "description": "List of listeners for the event",
                 "items": {
                     "type": "object",
                     "anyOf": [
@@ -398,17 +385,16 @@
                     "properties": {
                         "handler": {
                             "type": "string",
-                            "description": "Event handler in format 'component.method'",
-                            "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                            "description": "Event handler in format 'component.method' or relative path 'lib\\event\\EventHandler.method'"
                         },
                         "priority": {
                             "type": "integer",
-                            "description": "Priority (1 highest)",
+                            "description": "Event priority (1 is highest)",
                             "default": 1000
                         },
                         "queue": {
                             "type": "string",
-                            "description": "Queue name for async processing"
+                            "description": "Queue name for asynchronous event processing"
                         }
                     }
                 }
@@ -416,7 +402,7 @@
         },
         "routes": {
             "type": "array",
-            "description": "HTTP route definitions",
+            "description": "HTTP route definitions for the module",
             "items": {
                 "type": "object",
                 "required": [
@@ -427,11 +413,11 @@
                 "properties": {
                     "path": {
                         "type": "string",
-                        "description": "URL path with optional dynamic segments"
+                        "description": "URL path with optional dynamic segments (e.g., '/users/@id:[0-9]+')"
                     },
                     "method": {
                         "type": "string",
-                        "description": "HTTP method",
+                        "description": "HTTP method or multiple methods separated by '|' (e.g., 'GET' or 'GET|POST')",
                         "oneOf": [
                             {
                                 "enum": [
@@ -451,48 +437,47 @@
                     },
                     "handler": {
                         "type": "string",
-                        "description": "Route handler in format 'component.method'",
-                        "pattern": "^[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
+                        "description": "Route handler in format 'component.method' or relative path 'lib\\controller\\ControllerClass.method'"
                     },
                     "params": {
                         "type": "array",
-                        "description": "Parameters for handler"
+                        "description": "Parameters passed to the handler"
                     },
                     "middleware": {
                         "oneOf": [
                             {
                                 "type": "string",
-                                "description": "Middleware configuration 'app@component.method'",
+                                "description": "Single middleware in format 'module@component.method' or 'component.method'",
                                 "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                             },
                             {
                                 "type": "array",
-                                "description": "Middleware configuration",
+                                "description": "List of middleware configurations",
                                 "items": {
                                     "type": "string",
-                                    "description": "Middleware in format 'module@component.method'",
+                                    "description": "Middleware in format 'module@component.method' or 'component.method'",
                                     "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                                 }
                             },
                             {
                                 "type": "object",
-                                "description": "Middleware configuration for before/after chain",
+                                "description": "Middleware configuration with before/after separation",
                                 "properties": {
                                     "before": {
                                         "type": "array",
-                                        "description": "Middleware before main chain",
+                                        "description": "Middleware executed before the main chain",
                                         "items": {
                                             "type": "string",
-                                            "description": "Middleware in format 'module@component.method'",
+                                            "description": "Middleware in format 'module@component.method' or 'component.method'",
                                             "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                                         }
                                     },
                                     "after": {
                                         "type": "array",
-                                        "description": "Middleware after main chain",
+                                        "description": "Middleware executed after the main chain",
                                         "items": {
                                             "type": "string",
-                                            "description": "Middleware in format 'module@component.method'",
+                                            "description": "Middleware in format 'module@component.method' or 'component.method'",
                                             "pattern": "^([a-z][a-zA-Z0-9]*@)?[a-z][a-zA-Z0-9]*\\.[a-z][a-zA-Z0-9]*$"
                                         }
                                     }
@@ -502,14 +487,14 @@
                     },
                     "id": {
                         "type": "string",
-                        "description": "Unique route identifier"
+                        "description": "Unique identifier for the route (used for acl/logging/debugging)"
                     }
                 }
             }
         },
         "config": {
             "type": "object",
-            "description": "Environment configuration for the module",
+            "description": "Environment-specific configuration variables for the module",
             "additionalProperties": true
         }
     }
